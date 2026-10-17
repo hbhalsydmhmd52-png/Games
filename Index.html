@@ -194,9 +194,9 @@ body.touch #vitals{left:155px;bottom:22px;width:170px}body.touch #weaponPanel{wi
  <div class="menu-content">
   <div class="eyebrow"><i class="live-dot"></i> ساحة ثلاثية الأبعاد. فرصة واحدة للبقاء.</div>
   <h1>الناجي<br><span>الأخير.</span></h1>
-  <p class="intro">المنطقة تضيق. الخصوم يقتربون.<br>تسلّح، احتمِ، وغيّر قواعد المعركة. مواجهة فردية ضد 17 خصمًا آليًا… والفوز لآخر من يصمد.</p>
+  <p class="intro">المنطقة تضيق. الخصوم يقتربون.<br>تسلّح، احتمِ، وغيّر قواعد المعركة. مواجهة فردية ضد 99 خصمًا آليًا… والفوز لآخر من يصمد.</p>
   <div class="features">
-   <div class="feature"><b>18</b><small>مقاتلًا في الساحة</small></div>
+   <div class="feature"><b>100</b><small>مقاتلًا في الساحة</small></div>
    <div class="feature"><b>03</b><small>أسلحة بأساليب مختلفة</small></div>
    <div class="feature"><b>01</b><small>ناجٍ يكتب النهاية</small></div>
   </div>
@@ -210,7 +210,7 @@ body.touch #vitals{left:155px;bottom:22px;width:170px}body.touch #weaponPanel{wi
 
 <div id="hud" class="hidden">
  <div class="hud-brand">SKY<span>FALL</span></div>
- <div class="stats"><div class="stat"><small>على قيد الحياة</small><b id="aliveVal">18</b></div><div class="stat kills"><small>إقصاءاتك</small><b id="killVal">0</b></div></div>
+ <div class="stats"><div class="stat"><small>على قيد الحياة</small><b id="aliveVal">100</b></div><div class="stat kills"><small>إقصاءاتك</small><b id="killVal">0</b></div></div>
  <div id="scoreTag">النقاط <span id="scoreVal">0</span></div>
  <div id="zonePanel"><div id="zoneTitle">تضيق المنطقة خلال</div><div id="zoneTime">00:24</div><div id="zoneStage">المرحلة 01</div></div>
  <div id="mapBox"><canvas id="minimap" width="320" height="320"></canvas><div class="map-caption"><span>SECTOR 07</span><span id="matchTime">00:00</span></div></div>
@@ -254,7 +254,7 @@ body.touch #vitals{left:155px;bottom:22px;width:170px}body.touch #weaponPanel{wi
 <section id="endScreen" class="overlay hidden">
  <div class="modal" id="resultModal">
   <div class="eyebrow" id="resultEyebrow" style="justify-content:center">انتهت المعركة</div>
-  <div id="rank">#1 <small>/ 18</small></div>
+  <div id="rank">#1 <small>/ 100</small></div>
   <h2 id="resultTitle">أنت الناجي الأخير!</h2>
   <p id="resultDesc">الساحة لك. لا أحد بقي واقفًا.</p>
   <div class="result-stats"><div><b id="resKills">0</b><small>إقصاءات</small></div><div><b id="resDamage">0</b><small>ضرر أصبته</small></div><div><b id="resTime">0:00</b><small>وقت الصمود</small></div><div><b id="resLoot">0</b><small>إمدادات</small></div></div>
@@ -580,12 +580,12 @@ function resetRound(){
  reloadTime=healTime=fireCool=dashCool=dashTime=0;hurtTime=shake=hitTime=toastTime=killBannerTime=0;dropAt=34;deadBy='';finalScore=0;zoneHurt=0;
  weapons.forEach((w,i)=>{w.mag=w.cap;w.reserve=[150,35,25][i];});
  player=createActor(0,12,true,'أنت',0);actors.push(player);
- for(let i=0;i<17;i++){
+ for(let i=0;i<99;i++){
   let p;
   if(i===0)p={x:-10,z:0};else if(i===1)p={x:10,z:-9};else{
    for(let k=0;k<100;k++){p=freePoint(87);if(Math.hypot(p.x,p.z-12)>29&&actors.every(a=>Math.hypot(a.x-p.x,a.z-p.z)>6))break;}
   }
-  actors.push(createActor(p.x,p.z,false,names[i],i+1));
+  actors.push(createActor(p.x,p.z,false,i<names.length?names[i]:`${names[i%names.length]}-${String(i+1).padStart(2,'0')}`,i+1));
  }
  spawnLoot(3,18,'ammo');spawnLoot(-5,9,'armor');spawnLoot(6,22,'health');
  for(let i=0;i<22;i++){const p=freePoint(87);spawnLoot(p.x,p.z,['ammo','armor','health'][i%3]);}
@@ -618,7 +618,7 @@ function finish(win){
  finalScore=Math.floor(elapsed*3)+kills*250+pickupPoints+(win?1000:0);
  const record=finalScore>best;best=Math.max(best,finalScore);
  try{localStorage.setItem('skyfall-best',String(best));}catch(e){}
- $('rank').innerHTML='#'+rank+' <small>/ 18</small>';
+ $('rank').innerHTML='#'+rank+' <small>/ 100</small>';
  $('resultTitle').textContent=win?'أنت الناجي الأخير!':'سقطت… لا تستسلم.';
  $('resultDesc').textContent=win?'الساحة لك. لم يبقَ أحد يقف في طريقك.':deadBy==='storm'?'المنطقة كانت أسرع منك. راقب الدائرة في المعركة القادمة.':'أقصاك '+deadBy+'. غيّر موقعك، احتمِ أكثر، وعُد أقوى.';
  $('resultEyebrow').textContent=win?'WINNER / SKYFALL CHAMPION':'انتهت المعركة / MISSION ENDED';
