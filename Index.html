@@ -194,10 +194,10 @@ body.touch #vitals{left:155px;bottom:22px;width:170px}body.touch #weaponPanel{wi
  <div class="menu-content">
   <div class="eyebrow"><i class="live-dot"></i> ساحة ثلاثية الأبعاد. فرصة واحدة للبقاء.</div>
   <h1>الناجي<br><span>الأخير.</span></h1>
-  <p class="intro">المنطقة تضيق. الخصوم يقتربون.<br>تسلّح، احتمِ، وغيّر قواعد المعركة. مواجهة فردية ضد 99 خصمًا آليًا… والفوز لآخر من يصمد.</p>
+  <p class="intro">خريطة موسّعة بمقياس 8KM، وأربع مناطق جديدة للاستكشاف.<br>واجه 99 خصمًا آليًا بين الصحراء والغابة والمستودعات والأراضي الرطبة… والفوز لآخر من يصمد.</p>
   <div class="features">
    <div class="feature"><b>100</b><small>مقاتلًا في الساحة</small></div>
-   <div class="feature"><b>03</b><small>أسلحة بأساليب مختلفة</small></div>
+   <div class="feature"><b>8KM</b><small>خريطة موسّعة</small></div>
    <div class="feature"><b>01</b><small>ناجٍ يكتب النهاية</small></div>
   </div>
   <button class="primary" id="startBtn"><span>ابدأ المعركة</span><span class="arrow">←</span></button>
@@ -328,21 +328,35 @@ const groundTex=makeCanvasTexture(512,(c,s)=>{
  c.strokeStyle='rgba(150,191,183,.07)';c.lineWidth=1;
  for(let i=0;i<s;i+=64){c.beginPath();c.moveTo(i,0);c.lineTo(i,s);c.moveTo(0,i);c.lineTo(s,i);c.stroke();}
 });
-groundTex.wrapS=groundTex.wrapT=THREE.RepeatWrapping;groundTex.repeat.set(12,12);
-mats.ground.map=groundTex;plane(world,0,0,240,240,mats.ground,0);
+groundTex.wrapS=groundTex.wrapT=THREE.RepeatWrapping;groundTex.repeat.set(16,16);
+mats.ground.map=groundTex;plane(world,0,0,320,320,mats.ground,0);
 const roadTex=makeCanvasTexture(256,(c,s)=>{
  c.fillStyle='#203039';c.fillRect(0,0,s,s);for(let i=0;i<2200;i++){c.fillStyle='rgba(130,151,159,.07)';c.fillRect(sr(0,s),sr(0,s),1,2);}
  c.fillStyle='#50636a';c.fillRect(9,0,3,s);c.fillRect(244,0,3,s);c.fillStyle='#a3a28c';c.fillRect(126,24,4,80);c.fillRect(126,152,4,80);
 });
 roadTex.wrapS=roadTex.wrapT=THREE.RepeatWrapping;roadTex.repeat.set(1,16);
 const roadMat=mat(0xffffff,{map:roadTex});
-[-36,0,36].forEach(p=>{plane(world,p,0,8,188,roadMat,.025);const r=plane(world,0,p,8,188,roadMat,.028);r.rotation.z=Math.PI/2;});
+[-48,0,48].forEach(p=>{plane(world,p,0,8,256,roadMat,.025);const r=plane(world,0,p,8,256,roadMat,.028);r.rotation.z=Math.PI/2;});
+
+// المناطق الجديدة: صحراء شرقية، غابة غربية، منطقة صناعية جنوبية وأراضٍ رطبة شمالية.
+const regionDesert=mat(0x8d7955,{roughness:1});
+const regionForest=mat(0x244b3f,{roughness:1});
+const regionIndustrial=mat(0x293b49,{roughness:.95});
+const regionWetland=mat(0x315c62,{roughness:.9});
+plane(world,91,0,58,66,regionDesert,.012);
+plane(world,-91,0,58,66,regionForest,.013);
+plane(world,0,91,66,58,regionIndustrial,.014);
+plane(world,0,-91,66,58,regionWetland,.015);
+for(const [x,z,color] of [[91,0,0xd7ad69],[-91,0,0x5bd09a],[0,91,0x78a9c9],[0,-91,0x6ad6d0]]){
+ const marker=new THREE.Mesh(new THREE.TorusGeometry(18,.18,4,72),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.52}));
+ marker.rotation.x=-Math.PI/2;marker.position.set(x,.08,z);world.add(marker);
+}
 const solarTex=makeCanvasTexture(128,(c,s)=>{
  c.fillStyle='#193c53';c.fillRect(0,0,s,s);c.strokeStyle='#3b627b';c.lineWidth=2;for(let a=0;a<=s;a+=16){c.beginPath();c.moveTo(a,0);c.lineTo(a,s);c.moveTo(0,a);c.lineTo(s,a);c.stroke();}
 });
 const solarMat=mat(0x97caff,{map:solarTex,roughness:.4,metalness:.45});
 function rectCollider(x,z,w,d,type){colliders.push({type:'box',x,z,w:w/2,d:d/2,kind:type});}
-for(const x of [-55,-18,18,55])for(const z of [-55,-18,18,55]){
+for(const x of [-72,-24,24,72])for(const z of [-72,-24,24,72]){
  const w=sr(11.5,16),d=sr(11,15.5),h=sr(3.5,6.3);
  plane(world,x,z,23,23,mats.walk,.04);
  const g=new THREE.Group();world.add(g);const own=[];
@@ -358,7 +372,7 @@ for(const x of [-55,-18,18,55])for(const z of [-55,-18,18,55]){
 }
 const containerMats=[mat(0x426e75),mat(0x9a6547),mat(0x4c697f)];
 for(let i=0;i<23;i++){
- const axis=i%2===0,side=(i%4<2?-1:1),pos=sr(-78,78);
+ const axis=i%2===0,side=(i%4<2?-1:1),pos=sr(-112,112);
  const x=axis?side*6.7:pos,z=axis?pos:side*6.7;
  if(mapBuildings.some(b=>Math.abs(x-b.x)<b.w/2+4&&Math.abs(z-b.z)<b.d/2+4))continue;
  const w=axis?2.4:sr(3,5),d=axis?sr(3,5):2.4,h=1.65;
@@ -372,7 +386,7 @@ const trunkInst=new THREE.InstancedMesh(new THREE.CylinderGeometry(.19,.28,1.6,6
 const crownInst=new THREE.InstancedMesh(new THREE.ConeGeometry(1.7,4.4,6),mats.leaf,34);
 trunkInst.castShadow=crownInst.castShadow=true;world.add(trunkInst,crownInst);
 function solidAt(x,z,r=.6){
- if(Math.abs(x)>96-r||Math.abs(z)>96-r)return true;
+ if(Math.abs(x)>128-r||Math.abs(z)>128-r)return true;
  for(const c of colliders){
   if(c.type==='box'){
    const dx=Math.max(Math.abs(x-c.x)-c.w,0),dz=Math.max(Math.abs(z-c.z)-c.d,0);
@@ -382,22 +396,22 @@ function solidAt(x,z,r=.6){
  return false;
 }
 for(let i=0;i<34;i++){
- let x,z;for(let k=0;k<100;k++){const a=sr(0,Math.PI*2),r=sr(75,92);x=Math.cos(a)*r;z=Math.sin(a)*r;if(!solidAt(x,z,2))break;}
+ let x,z;for(let k=0;k<100;k++){const a=sr(0,Math.PI*2),r=sr(104,123);x=Math.cos(a)*r;z=Math.sin(a)*r;if(!solidAt(x,z,2))break;}
  dummy.position.set(x,.8,z);dummy.scale.set(1,1,1);dummy.rotation.set(0,0,0);dummy.updateMatrix();trunkInst.setMatrixAt(i,dummy.matrix);
  dummy.position.y=3;dummy.scale.setScalar(sr(.8,1.2));dummy.rotation.y=sr(0,6);dummy.updateMatrix();crownInst.setMatrixAt(i,dummy.matrix);
  colliders.push({type:'circle',x,z,r:.5,kind:'tree'});
 }
 const rockGeo=new THREE.DodecahedronGeometry(1,0);
 for(let i=0;i<18;i++){
- let x,z;for(let k=0;k<100;k++){x=sr(-90,90);z=sr(-90,90);if(!solidAt(x,z,3)&&Math.abs(x)>9&&Math.abs(z)>9)break;}
+ let x,z;for(let k=0;k<100;k++){x=sr(-120,120);z=sr(-120,120);if(!solidAt(x,z,3)&&Math.abs(x)>9&&Math.abs(z)>9)break;}
  const s=sr(.8,1.8),r=new THREE.Mesh(rockGeo,mats.rock);r.position.set(x,s*.5,z);r.scale.set(s,s*.7,s*.85);r.rotation.set(sr(0,.5),sr(0,6),0);r.castShadow=r.receiveShadow=true;world.add(r);colliders.push({type:'circle',x,z,r:s*.85,kind:'rock'});
 }
-const postInst=new THREE.InstancedMesh(boxGeo,mats.metal,80);
-for(let i=0;i<80;i++){
- const side=Math.floor(i/20),v=-95+(i%20)*10;
- dummy.position.set(side<2?v:(side===2?-96:96),1.05,side<2?(side===0?-96:96):v);dummy.rotation.set(0,0,0);dummy.scale.set(.18,2.1,.18);dummy.updateMatrix();postInst.setMatrixAt(i,dummy.matrix);
+const postInst=new THREE.InstancedMesh(boxGeo,mats.metal,104);
+for(let i=0;i<104;i++){
+ const side=Math.floor(i/26),v=-127+(i%26)*10;
+ dummy.position.set(side<2?v:(side===2?-128:128),1.05,side<2?(side===0?-128:128):v);dummy.rotation.set(0,0,0);dummy.scale.set(.18,2.1,.18);dummy.updateMatrix();postInst.setMatrixAt(i,dummy.matrix);
 }world.add(postInst);
-for(const p of [-96,96]){box(world,0,1.1,p,192,.09,.12,mats.metal,false);box(world,p,1.1,0,.12,.09,192,mats.metal,false);}
+for(const p of [-128,128]){box(world,0,1.1,p,256,.09,.12,mats.metal,false);box(world,p,1.1,0,.12,.09,256,mats.metal,false);}
 for(const x of [-36,36])for(const z of [-36,0,36]){
  box(world,x+5,1.8,z+5,.15,3.6,.15,mats.metal);
  box(world,x+4.5,3.6,z+5,1.1,.12,.3,mats.dark);
@@ -407,8 +421,8 @@ const padMat=new THREE.MeshBasicMaterial({color:0x60e8ca,transparent:true,opacit
 const pad=new THREE.Mesh(new THREE.RingGeometry(3.55,3.65,48),padMat);pad.rotation.x=-Math.PI/2;pad.position.set(0,.06,12);world.add(pad);
 const pad2=new THREE.Mesh(new THREE.RingGeometry(2.9,2.93,48),padMat);pad2.rotation.x=-Math.PI/2;pad2.position.set(0,.06,12);world.add(pad2);
 
-const stormUniforms={uCenter:{value:new THREE.Vector2()},uRadius:{value:112},uTime:{value:0}};
-const stormGround=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.ShaderMaterial({
+const stormUniforms={uCenter:{value:new THREE.Vector2()},uRadius:{value:125},uTime:{value:0}};
+const stormGround=new THREE.Mesh(new THREE.PlaneGeometry(320,320),new THREE.ShaderMaterial({
  transparent:true,depthWrite:false,side:THREE.DoubleSide,uniforms:stormUniforms,
  vertexShader:'varying vec3 vWorld; void main(){vec4 p=modelMatrix*vec4(position,1.0);vWorld=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}',
  fragmentShader:'uniform vec2 uCenter;uniform float uRadius;uniform float uTime;varying vec3 vWorld;void main(){float d=length(vWorld.xz-uCenter);if(d<uRadius)discard;float edge=1.0-smoothstep(0.0,3.0,d-uRadius);float wave=sin(d*.75-uTime*2.0)*.5+.5;gl_FragColor=vec4(mix(vec3(.25,.22,.65),vec3(.36,.68,1.0),edge),.19+edge*.3+wave*.035);}'
@@ -536,8 +550,8 @@ function addFeed(killer,victim,own=false){
  $('feed').prepend(node);feed.unshift({node,life:5});
  while(feed.length>3){feed.pop().node.remove();}
 }
-function freePoint(radius=85,cx=0,cz=0){
- for(let i=0;i<200;i++){const a=rand(0,Math.PI*2),r=Math.sqrt(Math.random())*radius,x=clamp(cx+Math.cos(a)*r,-91,91),z=clamp(cz+Math.sin(a)*r,-91,91);if(!solidAt(x,z,1.2))return{x,z};}
+function freePoint(radius=115,cx=0,cz=0){
+ for(let i=0;i<200;i++){const a=rand(0,Math.PI*2),r=Math.sqrt(Math.random())*radius,x=clamp(cx+Math.cos(a)*r,-122,122),z=clamp(cz+Math.sin(a)*r,-122,122);if(!solidAt(x,z,1.2))return{x,z};}
  return{x:0,z:12};
 }
 function spawnLoot(x,z,type,fall=false){
@@ -567,10 +581,10 @@ function spawnLoot(x,z,type,fall=false){
  const item={group,mesh,glow,beam,chute,x,z,type,phase:rand(0,6),height:fall?25:0,dead:false};loot.push(item);return item;
 }
 function planZone(){
- const radii=[78,56,38,24,13,6,2,0];
+ const radii=[96,70,49,32,19,9,3,0];
  zone.nextR=radii[Math.min(zone.stage,radii.length-1)];
  const maxShift=Math.max(0,zone.radius-zone.nextR)*.32,angle=rand(0,Math.PI*2),shift=rand(0,maxShift);
- zone.nx=clamp(zone.x+Math.cos(angle)*shift,-38,38);zone.nz=clamp(zone.z+Math.sin(angle)*shift,-38,38);
+ zone.nx=clamp(zone.x+Math.cos(angle)*shift,-58,58);zone.nz=clamp(zone.z+Math.sin(angle)*shift,-58,58);
  zone.mode='wait';zone.timer=zone.stage===0?24:18;zone.duration=zone.stage<3?27:22;
 }
 function resetRound(){
@@ -583,13 +597,13 @@ function resetRound(){
  for(let i=0;i<99;i++){
   let p;
   if(i===0)p={x:-10,z:0};else if(i===1)p={x:10,z:-9};else{
-   for(let k=0;k<100;k++){p=freePoint(87);if(Math.hypot(p.x,p.z-12)>29&&actors.every(a=>Math.hypot(a.x-p.x,a.z-p.z)>6))break;}
+   for(let k=0;k<100;k++){p=freePoint(117);if(Math.hypot(p.x,p.z-12)>29&&actors.every(a=>Math.hypot(a.x-p.x,a.z-p.z)>6))break;}
   }
   actors.push(createActor(p.x,p.z,false,i<names.length?names[i]:`${names[i%names.length]}-${String(i+1).padStart(2,'0')}`,i+1));
  }
  spawnLoot(3,18,'ammo');spawnLoot(-5,9,'armor');spawnLoot(6,22,'health');
- for(let i=0;i<22;i++){const p=freePoint(87);spawnLoot(p.x,p.z,['ammo','armor','health'][i%3]);}
- zone={x:0,z:0,radius:112,nx:0,nz:0,nextR:78,stage:0,timer:24,mode:'wait',duration:27};planZone();
+ for(let i=0;i<34;i++){const p=freePoint(117);spawnLoot(p.x,p.z,['ammo','armor','health'][i%3]);}
+ zone={x:0,z:0,radius:125,nx:0,nz:0,nextR:96,stage:0,timer:24,mode:'wait',duration:27};planZone();
  focusX=player.x;focusZ=player.z;
  $('toast').classList.remove('show');$('killBanner').classList.remove('show');$('zoneWarning').classList.add('hidden');
  $('hurt').style.opacity=0;$('stormTint').style.opacity=0;
@@ -919,12 +933,12 @@ function updateEffects(dt){
  for(let i=feed.length-1;i>=0;i--){feed[i].life-=dt;if(feed[i].life<=0){feed[i].node.remove();feed.splice(i,1);}}
 }
 function drawMap(){
- const c=mapctx,s=160,scale=160/200,toX=x=>80+x*scale,toY=z=>80+z*scale;
+ const c=mapctx,s=160,scale=160/280,toX=x=>80+x*scale,toY=z=>80+z*scale;
  c.clearRect(0,0,s,s);c.fillStyle='#132a33';c.fillRect(0,0,s,s);
  c.strokeStyle='#1e3a43';c.lineWidth=.5;
- for(let i=0;i<s;i+=20){c.beginPath();c.moveTo(i,0);c.lineTo(i,s);c.moveTo(0,i);c.lineTo(s,i);c.stroke();}
+ for(let i=0;i<s;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i,s);c.moveTo(0,i);c.lineTo(s,i);c.stroke();}
  c.fillStyle='#2b424b';
- for(const p of [-36,0,36]){c.fillRect(toX(p)-3,4,6,152);c.fillRect(4,toY(p)-3,152,6);}
+ for(const p of [-48,0,48]){c.fillRect(toX(p)-2,0,4,160);c.fillRect(0,toY(p)-2,160,4);}
  for(const b of mapBuildings){c.fillStyle='#4a6370';c.fillRect(toX(b.x-b.w/2),toY(b.z-b.d/2),b.w*scale,b.d*scale);}
  c.save();c.beginPath();c.rect(0,0,s,s);c.arc(toX(zone.x),toY(zone.z),Math.max(.1,zone.radius*scale),0,Math.PI*2,true);c.fillStyle='rgba(113,79,193,.32)';c.fill('evenodd');c.restore();
  c.beginPath();c.arc(toX(zone.x),toY(zone.z),Math.max(.1,zone.radius*scale),0,Math.PI*2);c.strokeStyle='#83b9ff';c.lineWidth=1.4;c.stroke();
