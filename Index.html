@@ -284,10 +284,10 @@ let renderer;
 try{
  renderer=new THREE.WebGLRenderer({antialias:!coarse,alpha:false,powerPreference:'high-performance'});
 }catch(e){$('engineNote').textContent='هذا الجهاز لا يدعم WebGL. جرّب متصفحًا أحدث لتشغيل الساحة.';return;}
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,coarse?1.4:1.7));
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,coarse?1.5:2));
 renderer.setSize(W,H);
 renderer.setClearColor(0x101f2c);
-renderer.shadowMap.enabled=!coarse;
+renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -295,11 +295,11 @@ renderer.toneMappingExposure=1.2;
 $('world').appendChild(renderer.domElement);
 const scene=new THREE.Scene();
 scene.fog=new THREE.FogExp2(0x122631,.0038);
-const camera=new THREE.OrthographicCamera(-30,30,21,-21,.1,250);
+const camera=new THREE.PerspectiveCamera(64,W/H,.1,500);
 const hemi=new THREE.HemisphereLight(0xc3e8ff,0x25473e,1.15);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xffe0b3,1.55);
-sun.position.set(-25,55,20);sun.castShadow=!coarse;
-sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=45;sun.shadow.camera.bottom=-45;sun.shadow.camera.near=1;sun.shadow.camera.far=130;sun.shadow.bias=-.0007;sun.shadow.normalBias=.035;
+sun.position.set(-25,55,20);sun.castShadow=true;
+sun.shadow.mapSize.set(coarse?1024:2048,coarse?1024:2048);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=45;sun.shadow.camera.bottom=-45;sun.shadow.camera.near=1;sun.shadow.camera.far=130;sun.shadow.bias=-.0007;sun.shadow.normalBias=.035;
 scene.add(sun);scene.add(sun.target);
 const coolLight=new THREE.DirectionalLight(0x6dceff,.55);coolLight.position.set(30,20,-35);scene.add(coolLight);
 const world=new THREE.Group(),dynamic=new THREE.Group();scene.add(world,dynamic);
@@ -453,7 +453,11 @@ function createActor(x,z,isPlayer,name,index){
  const legL=box(model,-.2,.34,0,.29,.65,.32,actorMats.pants);
  const legR=box(model,.2,.34,0,.29,.65,.32,actorMats.pants);
  box(model,0,1.02,0,.82,.77,.53,cloth);
- box(model,0,1.07,-.37,.58,.6,.26,actorMats.pants);
+ // Extra silhouette details for third-person view.
+ box(model,0,1.04,.285,.49,.43,.075,actorMats.helmet,false);
+ box(model,0,1.06,-.36,.46,.55,.24,actorMats.pants);
+ box(model,-.2,.12,.035,.32,.2,.43,actorMats.gun,false);
+ box(model,.2,.12,.035,.32,.2,.43,actorMats.gun,false);
  box(model,0,1.67,.01,.58,.49,.55,actorMats.helmet);
  box(model,0,1.7,.296,.48,.15,.05,isPlayer?actorMats.visorP:actorMats.visorE,false);
  const larm=box(model,-.48,1.03,.13,.22,.57,.24,cloth);larm.rotation.x=-.6;
@@ -894,7 +898,16 @@ function updateCamera(dt){
  const tz=active?player.z+player.aimZ*2:10+Math.cos(menuTime*.12)*3;
  const k=1-Math.exp(-dt*6);focusX+=(tx-focusX)*k;focusZ+=(tz-focusZ)*k;
  const shakeX=state==='playing'?rand(-shake,shake):0,shakeZ=state==='playing'?rand(-shake,shake):0;
- camera.position.set(focusX+shakeX,32,focusZ+28+shakeZ);camera.lookAt(focusX+shakeX,0,focusZ+shakeZ);
+ if(active&&player){
+  // Third-person over-the-shoulder follow camera.
+  const ax=player.aimX,az=player.aimZ;
+  const rightX=-az,rightZ=ax;
+  camera.position.set(focusX-ax*8+rightX*1.35+shakeX,4.4,focusZ-az*8+rightZ*1.35+shakeZ);
+  camera.lookAt(focusX+ax*3,1.25,focusZ+az*3);
+ }else{
+  camera.position.set(Math.sin(menuTime*.15)*5,25,35+Math.cos(menuTime*.12)*3);
+  camera.lookAt(0,0,0);
+ }
  camera.updateMatrixWorld();
  sun.position.set(focusX-25,55,focusZ+20);sun.target.position.set(focusX,0,focusZ);
  for(const b of buildings){
@@ -1048,8 +1061,7 @@ document.querySelectorAll('.weapon').forEach(b=>b.onclick=()=>switchWeapon(Numbe
 document.querySelectorAll('.sound-toggle').forEach(b=>b.onclick=toggleSound);
 function resize(){
  W=innerWidth;H=innerHeight;renderer.setSize(W,H);
- const span=W/H<.85?72:H<500?60:58;
- camera.left=-span*W/H/2;camera.right=span*W/H/2;camera.top=span/2;camera.bottom=-span/2;camera.updateProjectionMatrix();
+ camera.aspect=W/H;camera.fov=H<500?68:64;camera.updateProjectionMatrix();
  const dpr=Math.min(devicePixelRatio||1,2);fx.width=Math.round(W*dpr);fx.height=Math.round(H*dpr);fx.style.width=W+'px';fx.style.height=H+'px';fctx.setTransform(dpr,0,0,dpr,0,0);
 }
 window.addEventListener('resize',resize);
