@@ -593,7 +593,8 @@ function resetRound(){
  elapsed=0;kills=0;damageDealt=0;pickups=0;pickupPoints=0;weaponIndex=0;medkits=2;
  reloadTime=healTime=fireCool=dashCool=dashTime=0;hurtTime=shake=hitTime=toastTime=killBannerTime=0;dropAt=34;deadBy='';finalScore=0;zoneHurt=0;
  weapons.forEach((w,i)=>{w.mag=w.cap;w.reserve=[150,35,25][i];});
- const spawnPoint=freePoint(10,-100,0);\n player=createActor(spawnPoint.x,spawnPoint.z,true,'أنت',0);actors.push(player);
+ const spawnPoint=freePoint(10,-100,0);
+ player=createActor(spawnPoint.x,spawnPoint.z,true,'أنت',0);actors.push(player);
  for(let i=0;i<99;i++){
   let p;
   if(i===0)p={x:-10,z:0};else if(i===1)p={x:10,z:-9};else{
@@ -604,7 +605,8 @@ function resetRound(){
  spawnLoot(3,18,'ammo');spawnLoot(-5,9,'armor');spawnLoot(6,22,'health');
  for(let i=0;i<34;i++){const p=freePoint(117);spawnLoot(p.x,p.z,['ammo','armor','health'][i%3]);}
  zone={x:0,z:0,radius:125,nx:0,nz:0,nextR:96,stage:0,timer:24,mode:'wait',duration:27};planZone();
- pad.position.set(player.x,.06,player.z);pad2.position.set(player.x,.06,player.z);\n focusX=player.x;focusZ=player.z;
+ pad.position.set(player.x,.06,player.z);pad2.position.set(player.x,.06,player.z);
+ focusX=player.x;focusZ=player.z;
  $('toast').classList.remove('show');$('killBanner').classList.remove('show');$('zoneWarning').classList.add('hidden');
  $('hurt').style.opacity=0;$('stormTint').style.opacity=0;
  clearInput();updateWeaponButtons();updateHUD();updateZoneVisuals();
